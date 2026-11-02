@@ -1,7 +1,7 @@
 // Offline: a página (HTML) vem da rede quando há internet, para cada abertura já trazer a versão nova;
 // sem internet, vem do cache. Ícones, manifesto e fontes vêm do cache primeiro.
 // O nome do cache é gerado pelo build.py a partir de APP_VERSION (app.html).
-const CACHE = 'banjo-de-bolso-1.6.0';
+const CACHE = 'banjo-de-bolso-1.7.0';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png', './icons/icon-maskable-512.png'];
 
 self.addEventListener('install', e => {

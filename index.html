@@ -162,6 +162,39 @@ h3{font:700 1.2rem/1.15 var(--font-display);margin:0;text-wrap:balance}
 .facts dt{color:var(--muted)}
 .facts dd{margin:0;font-weight:700}
 #sg-stages,#sg-parts{flex-wrap:wrap;overflow:visible}
+.dg .nut.capo{fill:var(--brass)}
+.opts{display:flex;flex-wrap:wrap;gap:10px 18px}
+.opt{display:flex;flex-direction:column;gap:6px}
+.opt .lbl{margin:0}
+.neckfig{margin:0;display:flex;flex-direction:column;gap:6px}
+.neck{width:100%;max-width:420px;height:auto;display:block}
+.neck .nk{fill:var(--surface-2)}
+.neck .nf{stroke:var(--fret);stroke-width:2}
+.neck .ns{stroke:var(--ink);stroke-width:1.1;opacity:.75}
+.neck .nnut{fill:var(--ink)}
+.neck .inl{fill:var(--fret);opacity:.6}
+.neck .npeg{fill:var(--muted)}
+.neck .nn,.neck .nl{fill:var(--muted);font:600 10px var(--font-mono)}
+.neck .ncapo{fill:var(--brass);stroke:var(--surface);stroke-width:1.5}
+.neck .nspike{fill:var(--brass);stroke:var(--surface);stroke-width:1.5}
+.neckfig figcaption{font-size:.86rem;color:var(--muted);max-width:62ch}
+.neckfig figcaption b{color:var(--ink)}
+.vgrid.mini{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.vgrid.mini .vcard{padding:8px 4px}
+.vgrid.mini .dg{max-width:96px}
+.vcard .cn{font:700 1.05rem var(--font-display);color:var(--ink)}
+.sheet{display:flex;flex-direction:column;gap:12px;padding:12px;border-radius:10px;background:var(--bg);border:1px solid var(--line)}
+.sheet a{color:var(--pearl);font-weight:700}
+.lyp{display:flex;flex-direction:column;gap:2px}
+.lyp .lbl{margin:0 0 4px}
+.lyl{line-height:1.2;padding-block:2px}
+.lys{display:inline-flex;flex-direction:column;vertical-align:bottom}
+.lch{font:700 .82rem/1.3 var(--font-mono);color:var(--brass);min-height:1.3em;border-radius:4px;padding:0 3px 0 0;align-self:flex-start;transition:background-color .08s}
+.lch.on{background:var(--hl);color:var(--ink)}
+.lyt{white-space:pre;font-size:1rem}
+.lyl.bars{display:flex;gap:6px}
+.bar{flex:1;min-width:0;border-left:2px solid var(--line);padding:4px 8px}
+.bar .lch{font-size:.95rem;padding:2px 6px}
 .lvl{margin:0;padding:16px 4px 6px;font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--brass);font-weight:700;border-bottom:1px solid var(--line)}
 .legend b{font-family:var(--font-mono);color:var(--ink)}
 .plist{display:flex;flex-direction:column;border-top:1px solid var(--line)}
@@ -347,9 +380,10 @@ h3{font:700 1.2rem/1.15 var(--font-display);margin:0;text-wrap:balance}
 'use strict';
 /* ---------- teoria ---------- */
 /* ---------- versão (única fonte: build.py lê APP_VERSION para nomear o cache offline) ---------- */
-var APP_VERSION='1.6.0';
+var APP_VERSION='1.7.0';
 var APP_DATE='02/11/2026';
 var CHANGELOG=[
+  ['1.7.0','Músicas: opção com ou sem capotraste (acordes transpostos), desenho do braço com capo e spike, acordes de cada música e modo com letra acompanhando a reprodução.'],
   ['1.6.0','Tela Sobre com versão, botão “Procurar atualização” e diagnóstico da tela. Com internet, o app abre sempre na versão mais nova.'],
   ['1.5.0','Aba Músicas: 7 tutoriais do nível 1 ao 4, com capotraste e três etapas de dedilhado.'],
   ['1.4.0','iPhone: app ocupa a altura física da tela quando instalado.'],
@@ -422,6 +456,14 @@ function voicings(tk,root,qk){
 function pickVoicing(tk,ch,closed){
   var vs=voicings(tk,ch.root,ch.q);
   if(!vs.length) return {frets:[0,0,0,0]};
+  if(ch.easy&&!closed){ // músicas: a forma mais confortável entre as primeiras (pouca abertura, poucos dedos, perto da pestana)
+    var best=null, bs=1e9;
+    vs.slice(0,15).forEach(function(v){
+      var fd=v.frets.filter(function(f){return f>0;}), span=fd.length?Math.max.apply(null,fd)-Math.min.apply(null,fd):0;
+      var sc=span*1.5+v.n+v.pos*.6; if(sc<bs-1e-9){bs=sc; best=v;}
+    });
+    return best;
+  }
   if(closed){for(var i=0;i<vs.length;i++) if(vs[i].closed) return vs[i];}
   return vs[0];
 }
@@ -470,28 +512,63 @@ RIFFS.forEach(function(r){r.div=2;});
 var LEVELS={1:'Iniciante',2:'Básico',3:'Intermediário',4:'Avançado'};
 var SONGS=[
   {id:'cabbage', title:'Boil Them Cabbage Down', artist:'Tradicional', level:1, orig:'G', capo:0, bpm:80,
-   parts:[{n:'Forma completa', c:'G G C C G G D G'}], stages:['boom','pinch','alt'],
+   parts:[
+    {n:'Refrão', c:'G G C C G G D G', lyr:[
+      '[G]Boil them cabbage [G]down, down, [C]bake them hoecakes [C]brown, brown,',
+      'The [G]only song that [G]I can sing is [D]boil them cabbage [G]down.']},
+    {n:'Verso', c:'G G C C G G D G', lyr:[
+      '[G]Raccoon has a [G]bushy tail, the [C]possum\'s tail is [C]bare,',
+      'The [G]rabbit\'s got no [G]tail at all, just a [D]little bunch of [G]hair.']}],
+   stages:['boom','pinch','alt'],
    tip:'A música clássica para começar: três acordes, um por compasso. Na etapa 1 só o baixo e a pinça, para treinar as trocas sem parar o ritmo.'},
-  {id:'circle', title:'Will the Circle Be Unbroken', artist:'Tradicional (gravação da Carter Family)', level:1, orig:'G', capo:0, bpm:88,
-   parts:[{n:'Verso e refrão', c:'G G7 C G G G D G'}], stages:['boom','pinch','fwdrev'],
+  {id:'circle', title:'Will the Circle Be Unbroken', artist:'Tradicional (hino de 1907)', level:1, orig:'G', capo:0, bpm:88,
+   parts:[
+    {n:'Verso', c:'G G7 C G G G D G', lyr:[
+      'There are [G]loved ones in the [G7]glory,',
+      'Whose dear [C]forms you often [G]miss;',
+      '[G]When you close your earthly [G]story,',
+      'Will you [D]join them in their [G]bliss?']},
+    {n:'Refrão', c:'G G7 C G G G D G', lyr:[
+      'Will the [G]circle be un[G7]broken',
+      'By and [C]by, by and [G]by?',
+      '[G]Is a better home a[G]waiting',
+      'In the [D]sky, in the [G]sky?']}],
+   stages:['boom','pinch','fwdrev'],
+   lyrNote:'Letra do hino original de 1907 (domínio público). A versão famosa da Carter Family tem outra letra.',
    tip:'Progressão gospel I–IV–V. O G7 prepara a ida para o C: em Sol aberto é só a 1ª corda na casa 3, o resto solto.'},
-  {id:'oldjoe', title:'Old Joe Clark', artist:'Tradicional (fiddle tune)', level:2, orig:'A', capo:2, bpm:84,
-   parts:[{n:'Parte A', c:'G G G D G G D G'},{n:'Parte B', c:'G G F F G G D G'}], stages:['claw','double','drop'],
-   tip:'Tema de old-time em modo mixolídio: o F na parte B dá o sabor antigo. Toque em clawhammer, com capotraste na casa 2 para soar em Lá, como os violinistas tocam.'},
-  {id:'wagon', title:'Wagon Wheel', artist:'Old Crow Medicine Show / Darius Rucker', level:2, orig:'A', capo:2, bpm:80,
-   parts:[{n:'Ciclo (verso e refrão)', c:'G D Em C G D C C'}], stages:['pinch','fwdrev','fwd'],
+  {id:'oldjoe', title:'Old Joe Clark', artist:'Tradicional (fiddle tune)', level:2, orig:'A', sharps:true, capo:2, bpm:84,
+   parts:[
+    {n:'Parte A', c:'G G G D G G D G', lyr:[
+      '[G]Old Joe Clark, he [G]had a house, [G]fifteen stories [D]high,',
+      'And [G]every story [G]in that house was [D]filled with chicken [G]pie.']},
+    {n:'Parte B', c:'G G F F G G D G', lyr:[
+      '[G]Round and round, Old [G]Joe Clark, [F]round and round I [F]say,',
+      '[G]He\'d follow me ten [G]thousand miles to [D]hear my fiddle [G]play.']}],
+   stages:['claw','double','drop'],
+   tip:'Tema de old-time em modo mixolídio: o F na parte B dá o sabor antigo. Toque em clawhammer; com capotraste na casa 2 soa em Lá, como os violinistas tocam.'},
+  {id:'wagon', title:'Wagon Wheel', artist:'Old Crow Medicine Show / Darius Rucker', level:2, orig:'A', sharps:true, capo:2, bpm:80,
+   parts:[{n:'Ciclo (verso e refrão)', c:'G D Em C G D C C'}], stages:['pinch','fwdrev','fwd'], lyrQ:'Wagon Wheel Old Crow Medicine Show letra',
    tip:'A música inteira é este ciclo de quatro acordes. O Em é fácil (2·0·0·2); segure o C por dois compassos no fim de cada volta.'},
-  {id:'country', title:'Take Me Home, Country Roads', artist:'John Denver', level:2, orig:'A', capo:2, bpm:80,
+  {id:'country', title:'Take Me Home, Country Roads', artist:'John Denver', level:2, orig:'A', sharps:true, capo:2, bpm:80,
    parts:[{n:'Verso', c:'G Em D C G G Em D C G'},{n:'Refrão', c:'G D Em C G D C G'},{n:'Ponte', c:'Em D G G C G D D Em F C G D D7'}],
-   stages:['pinch','fwdrev','fwd'],
+   stages:['pinch','fwdrev','fwd'], lyrQ:'Take Me Home Country Roads John Denver letra',
    tip:'Verso e refrão usam os mesmos quatro acordes. A ponte traz o F (3·2·1·3), o acorde mais difícil da música: treine a troca C→F→C devagar antes de juntar com o rolo.'},
-  {id:'jolene', title:'Jolene', artist:'Dolly Parton', level:3, orig:'C#m', capo:4, bpm:84,
-   parts:[{n:'Refrão e verso', c:'Am C G Am G Em Am Am'}], stages:['alt','bwd','foggy'],
+  {id:'jolene', title:'Jolene', artist:'Dolly Parton', level:3, orig:'C#m', sharps:true, capo:4, bpm:84,
+   parts:[{n:'Refrão e verso', c:'Am C G Am G Em Am Am'}], stages:['alt','bwd','foggy'], lyrQ:'Jolene Dolly Parton letra',
    tip:'Tom menor e gravação rápida (perto de 110 bpm). O Am (2·2·1·2) é a base: deixe o indicador na 2ª corda casa 1 e só mexa os outros dedos. Suba o andamento de 4 em 4 bpm.'},
-  {id:'foggy', title:'Foggy Mountain Breakdown', artist:'Lester Flatt & Earl Scruggs', level:4, orig:'G', capo:0, bpm:96,
+  {id:'foggy', title:'Foggy Mountain Breakdown', artist:'Lester Flatt & Earl Scruggs', level:4, orig:'G', capo:0, bpm:96, instrumental:true,
    parts:[{n:'Progressão', c:'G G Em Em G G D G'}], stages:['fwd','foggy','vamp'],
    tip:'O tema de Earl Scruggs usa licks próprios que não estão aqui: você treina os rolos e o vamp sobre a progressão G–Em–D da música. A gravação é muito rápida; comece devagar e suba aos poucos.'}
 ];
+var SHARP=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function songChord(name,sg,useCapo){
+  var c=parseChord(name);
+  if(!useCapo&&sg.capo) c={root:(c.root+sg.capo)%12,q:c.q};
+  c.easy=true; c.names=(!useCapo&&sg.sharps)?SHARP:NOTE;
+  c.name=c.names[c.root]+QMAP[c.q].lbl;
+  c.sound=((sg.sharps)?SHARP:NOTE)[(c.root+(useCapo?sg.capo:0))%12]+QMAP[c.q].lbl;
+  return c;
+}
 function patternById(id){
   var i; for(i=0;i<ROLLS.length;i++) if(ROLLS[i].id===id) return {name:ROLLS[i].name,p:ROLLS[i].p,div:2,closed:false};
   for(i=0;i<RHYTHMS.length;i++) if(RHYTHMS[i].id===id) return {name:RHYTHMS[i].name,p:RHYTHMS[i].p,div:RHYTHMS[i].div,closed:!!RHYTHMS[i].closed};
@@ -515,31 +592,31 @@ function parseStep(tok){
     return {kind:'note',fin:tech?null:m[1],tech:tech,s:+m[2],f:m[3]==null?null:+m[3]};
   });
 }
-function resolveMeasure(pat,tk,ch,closed,capo){
-  var t=TUNINGS[tk], v=pickVoicing(tk,ch,closed), cp=capo||0;
+function resolveMeasure(pat,tk,ch,closed,capo,fifth){
+  var t=TUNINGS[tk], v=pickVoicing(tk,ch,closed), cp=capo||0, c5=fifth==null?cp:fifth;
   var steps=pat.trim().split(/\s+/).map(function(tok){
     var out=[];
     parseStep(tok).forEach(function(e){
       if(e.kind==='note'){
         var f=e.f!=null?e.f:(e.s===5?0:v.frets[4-e.s]);
-        out.push({kind:'pluck',s:e.s,f:f,midi:midiOf(t,e.s,f)+cp,fin:e.fin,tech:e.tech});
+        out.push({kind:'pluck',s:e.s,f:f,midi:midiOf(t,e.s,f)+(e.s===5?c5:cp),fin:e.fin,tech:e.tech});
       }else{
-        for(var s=e.from,o=0;s>=e.to;s--,o++){var ff=s===5?0:v.frets[4-s]; out.push({kind:e.kind,s:s,f:ff,midi:midiOf(t,s,ff)+cp,order:o});}
+        for(var s=e.from,o=0;s>=e.to;s--,o++){var ff=s===5?0:v.frets[4-s]; out.push({kind:e.kind,s:s,f:ff,midi:midiOf(t,s,ff)+(s===5?c5:cp),order:o});}
       }
     });
     return out;
   });
   return {label:chordName(ch),steps:steps};
 }
-function buildSeq(defs,tk,div,closed,capo){
-  var measures=defs.map(function(d){var m=resolveMeasure(d.p,tk,d.ch,closed,capo); if(d.pre) m.label=d.pre+' · '+m.label; return m;});
+function buildSeq(defs,tk,div,closed,capo,fifth){
+  var measures=defs.map(function(d){var m=resolveMeasure(d.p,tk,d.ch,closed,capo,fifth); if(d.lbl) m.label=d.lbl; if(d.pre) m.label=d.pre+' · '+m.label; return m;});
   var steps=[]; measures.forEach(function(m,mi){m.steps.forEach(function(evs,si){steps.push({evs:evs,mi:mi,si:si});});});
   return {div:div,measures:measures,steps:steps,tk:tk};
 }
 
 /* ---------- estado ---------- */
 var S={view:'acordes',tuning:'openG',root:7,q:'',mode:'nt',bpm:100,metro:false,loop:true,prog:'145',
-  sel:{dedilhados:'fwdrev',riffs:'slide',ritmos:'claw',musicas:'cabbage'},songStage:0,songPart:-1};
+  sel:{dedilhados:'fwdrev',riffs:'slide',ritmos:'claw',musicas:'cabbage'},songStage:0,songPart:-1,songCapo:true,songLyrics:true};
 try{var saved=JSON.parse(localStorage.getItem('banjo-de-bolso')||'null'); if(saved){for(var k in saved) if(k in S) S[k]=saved[k]; if(!TUNINGS[S.tuning]) S.tuning='openG';}}catch(e){}
 S.sel=Object.assign({dedilhados:'fwdrev',riffs:'slide',ritmos:'claw',musicas:'cabbage'},S.sel||{});
 function save(){try{localStorage.setItem('banjo-de-bolso',JSON.stringify(S));}catch(e){}}
@@ -598,18 +675,18 @@ function playEvents(evs,t){
     else if(e.kind==='chop') pluck(e.s,e.midi,t+e.order*.006,.36,.07);
   });
 }
-function strum(tk,v,ch){
-  var c=ac(), t=c.currentTime+.03, T=TUNINGS[tk], q=QMAP[ch.q], o=0;
-  var pcs=q.iv.map(function(i){return (ch.root+i)%12;});
-  if(pcs.indexOf(T.s5%12)>=0){pluck(5,T.s5,t,.3); o=1;}
-  for(var j=0;j<4;j++) pluck(4-j,T.strings[j]+v.frets[j],t+(o+j)*.028,.36);
+function strum(tk,v,ch,capo,fifth){
+  var c=ac(), t=c.currentTime+.03, T=TUNINGS[tk], q=QMAP[ch.q], o=0, cp=capo||0, c5=fifth==null?cp:fifth;
+  var pcs=q.iv.map(function(i){return (ch.root+cp+i)%12;});
+  if(pcs.indexOf((T.s5+c5)%12)>=0){pluck(5,T.s5+c5,t,.3); o=1;}
+  for(var j=0;j<4;j++) pluck(4-j,T.strings[j]+v.frets[j]+cp,t+(o+j)*.028,.36);
 }
 
 /* ---------- player ---------- */
 var P={on:false,seq:null,cols:null,i:0,next:0,q:[],timer:0,raf:0,cur:-1,end:0,lock:null};
 function play(seq,cols){
   stop(); var c=ac();
-  P.seq=seq; P.cols=cols; P.i=0; P.q=[]; P.cur=-1; P.end=0; P.next=c.currentTime+.1; P.on=true;
+  P.seq=seq; P.cols=cols; P.onMeasure=current.onMeasure||null; P.mi=-1; P.i=0; P.q=[]; P.cur=-1; P.end=0; P.next=c.currentTime+.1; P.on=true;
   P.timer=setInterval(tick,25); tick(); P.raf=requestAnimationFrame(draw); setIcon();
   try{ if(navigator.wakeLock) navigator.wakeLock.request('screen').then(function(l){P.lock=l;}).catch(function(){}); }catch(e){}
 }
@@ -628,13 +705,14 @@ function draw(){
   if(!P.on) return;
   var t=AC.currentTime, cur=P.cur;
   while(P.q.length&&P.q[0].t<=t) cur=P.q.shift().i;
-  if(cur!==P.cur){mark(P.cur,false); mark(cur,true); P.cur=cur;}
+  if(cur!==P.cur){mark(P.cur,false); mark(cur,true); P.cur=cur;
+    if(P.onMeasure&&cur>=0){var mi=P.seq.steps[cur].mi; if(mi!==P.mi){P.mi=mi; P.onMeasure(mi);}}}
   if(P.end&&t>=P.end+.05){stop();return;}
   P.raf=requestAnimationFrame(draw);
 }
 function stop(){
   if(P.timer) clearInterval(P.timer); if(P.raf) cancelAnimationFrame(P.raf);
-  mark(P.cur,false); P.cur=-1; P.on=false; P.timer=0;
+  mark(P.cur,false); P.cur=-1; P.on=false; P.timer=0; if(P.onMeasure){P.onMeasure(-1);} P.mi=-1;
   if(AC){var t=AC.currentTime; for(var s in voices) cut(+s,t);}
   if(P.lock){try{P.lock.release();}catch(e){} P.lock=null;}
   setIcon();
@@ -647,11 +725,11 @@ function setIcon(){
 
 /* ---------- desenho ---------- */
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-function diagram(v,tk,ch){
+function diagram(v,tk,ch,capo){
   var t=TUNINGS[tk], q=QMAP[ch.q], W=124, L=24, T=26, SS=24, FS=21, N=5;
   var fd=v.frets.filter(function(f){return f>0;}), mx=fd.length?Math.max.apply(null,fd):0, base=mx<=5?1:v.pos;
   var h='<svg class="dg" viewBox="0 0 '+W+' 160" aria-hidden="true">';
-  if(base===1) h+='<rect class="nut" x="'+(L-1)+'" y="'+(T-4)+'" width="'+(SS*3+2)+'" height="4"/>';
+  if(base===1) h+=capo?'<rect class="nut capo" x="'+(L-4)+'" y="'+(T-6)+'" width="'+(SS*3+8)+'" height="7" rx="3"/>':'<rect class="nut" x="'+(L-1)+'" y="'+(T-4)+'" width="'+(SS*3+2)+'" height="4"/>';
   else h+='<text class="bf" x="'+(L-7)+'" y="'+(T+FS*.5+4)+'" text-anchor="end">'+base+'</text>';
   for(var i=0;i<=N;i++) h+='<line class="fl" x1="'+L+'" x2="'+(L+SS*3)+'" y1="'+(T+i*FS)+'" y2="'+(T+i*FS)+'"/>';
   for(var j=0;j<4;j++) h+='<line class="st" x1="'+(L+j*SS)+'" x2="'+(L+j*SS)+'" y1="'+T+'" y2="'+(T+N*FS)+'"/>';
@@ -659,7 +737,7 @@ function diagram(v,tk,ch){
     var f=v.frets[j], x=L+j*SS, pc=(t.strings[j]+f)%12, iv=(pc-ch.root+12)%12, r=iv===0?' r':'';
     if(f===0) h+='<circle class="open'+r+'" cx="'+x+'" cy="'+(T-12)+'" r="5.5"/>';
     else h+='<circle class="dot'+r+'" cx="'+x+'" cy="'+(T+(f-base+.5)*FS)+'" r="8"/>';
-    var lab=S.mode==='iv'?ivLabel(q,iv):NOTE[pc];
+    var lab=S.mode==='iv'?ivLabel(q,iv):(ch.names||NOTE)[pc];
     h+='<text class="lb'+r+'" x="'+x+'" y="'+(T+N*FS+17)+'" text-anchor="middle">'+esc(lab)+'</text>';
   }
   return h+'</svg>';
@@ -785,22 +863,80 @@ function renderView(name){
 
 /* ---------- músicas ---------- */
 function setBpm(v){S.bpm=v; var b=document.getElementById('bpm'); b.value=v; document.getElementById('bpmv').textContent=v; save();}
+function neck(capo){
+  var X=function(i){return 26+i*29;}, Y=[0,18,33,48,63,80], h='<svg class="neck" viewBox="0 0 340 112" aria-hidden="true">';
+  h+='<rect class="nk" x="'+X(0)+'" y="8" width="'+(X(10)+12-X(0))+'" height="82" rx="3"/>';
+  [3,5,7,9].forEach(function(f){h+='<circle class="inl" cx="'+(X(f)-14.5)+'" cy="55.5" r="3.5"/>';});
+  for(var i=1;i<=10;i++){h+='<line class="nf" x1="'+X(i)+'" x2="'+X(i)+'" y1="10" y2="88"/>'; h+='<text class="nn" x="'+(X(i)-14.5)+'" y="106" text-anchor="middle">'+i+'</text>';}
+  h+='<rect class="nnut" x="'+(X(0)-4)+'" y="10" width="5" height="60"/>';
+  for(var s=1;s<=4;s++) h+='<line class="ns" x1="'+X(0)+'" x2="'+(X(10)+12)+'" y1="'+Y[s]+'" y2="'+Y[s]+'"/>';
+  h+='<line class="ns" x1="'+(X(5)-6)+'" x2="'+(X(10)+12)+'" y1="'+Y[5]+'" y2="'+Y[5]+'"/><circle class="npeg" cx="'+(X(5)-9)+'" cy="'+Y[5]+'" r="4"/>';
+  h+='<text class="nl" x="'+(X(0)-10)+'" y="'+(Y[1]+4)+'" text-anchor="end">1</text><text class="nl" x="'+(X(0)-10)+'" y="'+(Y[5]+4)+'" text-anchor="end">5</text>';
+  if(capo){
+    h+='<rect class="ncapo" x="'+(X(capo)-12)+'" y="11" width="8" height="'+(Y[4]-6)+'" rx="3"/>';
+    h+='<circle class="nspike" cx="'+(X(5+capo)-8)+'" cy="'+(Y[5]-4)+'" r="4"/>';
+  }
+  return h+'</svg>';
+}
+function sheetHtml(sg,parts,useCapo){
+  var m=0, h='';
+  parts.forEach(function(pt){
+    h+='<div class="lyp"><p class="lbl">'+esc(pt.n)+'</p>';
+    if(pt.lyr){
+      pt.lyr.forEach(function(line){
+        var segs=[], cur=null;
+        line.split(/(\[[^\]]+\])/).forEach(function(tok){
+          if(!tok) return; var mt=tok.match(/^\[(.+)\]$/);
+          if(mt){ if(cur!==null) segs.push({ch:cur,tx:''}); cur=mt[1]; } else { segs.push({ch:cur,tx:tok}); cur=null; }
+        });
+        if(cur!==null) segs.push({ch:cur,tx:''});
+        h+='<div class="lyl">'+segs.map(function(sg2){
+          var ch=sg2.ch?'<b class="lch" data-m="'+(m++)+'">'+esc(songChord(sg2.ch,sg,useCapo).name)+'</b>':'<b class="lch">&nbsp;</b>';
+          return '<span class="lys">'+ch+'<span class="lyt">'+esc(sg2.tx)+'</span></span>';
+        }).join('')+'</div>';
+      });
+    }else{
+      var cs=pt.c.split(/\s+/);
+      for(var i=0;i<cs.length;i+=4){
+        h+='<div class="lyl bars">'+cs.slice(i,i+4).map(function(c){return '<span class="bar"><b class="lch" data-m="'+(m++)+'">'+esc(songChord(c,sg,useCapo).name)+'</b></span>';}).join('')+'</div>';
+      }
+    }
+    h+='</div>';
+  });
+  return h;
+}
+function segCtl(id,label,opts,val){
+  return '<div class="opt"><span class="lbl">'+label+'</span><div class="seg" id="'+id+'">'+opts.map(function(o){
+    return '<button type="button" data-v="'+o[0]+'" aria-pressed="'+(o[0]===val)+'">'+esc(o[1])+'</button>';}).join('')+'</div></div>';
+}
 function renderSongs(){
   var sg=SONGS.filter(function(x){return x.id===S.sel.musicas;})[0]||SONGS[0];
   var stage=Math.max(0,Math.min(S.songStage|0,sg.stages.length-1));
   var part=sg.parts.length>1?Math.max(-1,Math.min(S.songPart|0,sg.parts.length-1)):0;
+  var useCapo=sg.capo>0&&S.songCapo!==false, lyrOn=S.songLyrics!==false;
+  var cp=useCapo?sg.capo:0, c5=sg.capo, key=sg.orig, n5=NOTE_PT[(sg.sharps?SHARP:NOTE)[(7+sg.capo)%12]]||NOTE_PT[NOTE[(7+sg.capo)%12]];
   var pat=patternById(sg.stages[stage]);
   var parts=part<0?sg.parts:[sg.parts[part]], defs=[];
-  parts.forEach(function(pt){pt.c.split(/\s+/).forEach(function(c,i){defs.push({ch:parseChord(c),p:pat.p,pre:i===0&&parts.length>1?pt.n:''});});});
-  var seq=buildSeq(defs,'openG',pat.div,pat.closed,sg.capo);
+  parts.forEach(function(pt){pt.c.split(/\s+/).forEach(function(c,i){var ch=songChord(c,sg,useCapo); defs.push({ch:ch,lbl:ch.name,p:pat.p,pre:i===0&&parts.length>1?pt.n:''});});});
+  var seq=buildSeq(defs,'openG',pat.div,pat.closed,cp,c5);
   var st=document.getElementById('st-musicas'), ls=document.getElementById('ls-musicas');
-  var capoTxt=sg.capo?('casa '+sg.capo):'sem capotraste';
-  var fifth=sg.capo?('afine em '+NOTE_PT[NOTE[(7+sg.capo)%12]]+' (ou spike na casa '+(5+sg.capo)+')'):'Sol, como sempre';
+  var capoTxt=!sg.capo?'não precisa':useCapo?('casa '+sg.capo+' · formas de G'):('sem capo · acordes em '+key);
+  var fifth=sg.capo?('afine em '+n5+(useCapo?' (ou spike na casa '+(5+sg.capo)+')':'')):'Sol, como sempre';
   var h='<div class="stage-h"><h3>'+esc(sg.title)+'</h3><span class="badge">Nível '+sg.level+' · '+LEVELS[sg.level]+'</span></div>'
     +'<p class="artist">'+esc(sg.artist)+'</p>'
-    +'<dl class="facts"><dt>Tom original</dt><dd>'+esc(sg.orig)+'</dd><dt>Capotraste</dt><dd>'+capoTxt+' · formas de G</dd>'
-    +'<dt>5ª corda</dt><dd>'+fifth+'</dd><dt>Começar em</dt><dd>'+sg.bpm+' bpm</dd></dl>'
-    +'<p class="desc">'+esc(sg.tip)+'</p>';
+    +'<dl class="facts"><dt>Tom original</dt><dd>'+esc(key)+'</dd><dt>Capotraste</dt><dd>'+capoTxt+'</dd>'
+    +'<dt>5ª corda</dt><dd>'+fifth+'</dd><dt>Começar em</dt><dd>'+sg.bpm+' bpm</dd></dl>';
+  h+='<div class="opts">'+(sg.capo?segCtl('sg-capo','Capotraste',[['1','Com capo (casa '+sg.capo+')'],['0','Sem capo']],useCapo?'1':'0'):'')
+    +segCtl('sg-lyr','Letra',[['1','Com letra'],['0','Sem letra']],lyrOn?'1':'0')+'</div>';
+  if(useCapo){
+    h+='<figure class="neckfig">'+neck(sg.capo)+'<figcaption><b>Capotraste na casa '+sg.capo+'</b> nas cordas 1 a 4: as formas de G passam a soar em '+esc(key)+'. '
+      +'A 5ª corda sobe para '+n5+': afine ou prenda no spike da casa '+(5+sg.capo)+' (ponto dourado).</figcaption></figure>';
+  }else if(sg.capo){
+    h+='<p class="fifth"><b>Sem capotraste:</b> os acordes foram transpostos para o tom original ('+esc(key)+'), com formas mais trabalhosas. '
+      +'A 5ª corda continua precisando subir para '+n5+': solta em Sol, ela soa fora do tom em quase todo rolo.</p>';
+  }
+  h+='<p class="desc">'+esc(sg.tip)+'</p>';
+  h+='<div><p class="lbl">Acordes desta música'+(useCapo?' · formas com capo':'')+'</p><div class="vgrid mini" id="sg-chords"></div></div>';
   if(sg.parts.length>1){
     h+='<div><p class="lbl">Parte</p><div class="progs" id="sg-parts">'
       +'<button type="button" class="chip" data-i="-1" aria-pressed="'+(part<0)+'">Música toda</button>'
@@ -809,13 +945,39 @@ function renderSongs(){
   h+='<div><p class="lbl">Etapa</p><div class="progs" id="sg-stages">'+sg.stages.map(function(id,i){
     return '<button type="button" class="chip" data-i="'+i+'" aria-pressed="'+(i===stage)+'">'+(i+1)+' · '+esc(patternById(id).name)+'</button>';
   }).join('')+'</div></div>';
+  if(lyrOn){
+    h+='<div class="sheet" id="sg-sheet">';
+    if(sg.instrumental) h+='<p class="legend">Música instrumental: acompanhe pela cifra.</p>';
+    else if(!sg.parts[0].lyr) h+='<p class="legend">A letra desta música é protegida por direitos autorais e não está no app. A cifra abaixo acende compasso a compasso durante a reprodução. <a href="https://www.google.com/search?q='+encodeURIComponent(sg.lyrQ||sg.title)+'" target="_blank" rel="noopener">Abrir a letra</a></p>';
+    else if(sg.lyrNote) h+='<p class="legend">'+esc(sg.lyrNote)+'</p>';
+    h+=sheetHtml(sg,parts,useCapo)+'</div>';
+  }
   st.innerHTML=h;
+  // acordes da música
+  var seen={}, uniq=[];
+  sg.parts.forEach(function(pt){pt.c.split(/\s+/).forEach(function(c){if(!seen[c]){seen[c]=1; uniq.push(songChord(c,sg,useCapo));}});});
+  var grid=document.getElementById('sg-chords');
+  grid.innerHTML=uniq.map(function(ch,i){
+    var v=pickVoicing('openG',ch,false);
+    return '<button type="button" class="vcard" data-i="'+i+'"><span class="cn">'+esc(ch.name)+'</span>'+diagram(v,'openG',ch,cp)
+      +'<span class="fr">'+v.frets.join('·')+'</span><span class="tag">'+(useCapo?'soa '+esc(ch.sound):'&nbsp;')+'</span></button>';
+  }).join('');
+  grid.querySelectorAll('.vcard').forEach(function(b){b.addEventListener('click',function(){
+    var ch=uniq[+b.dataset.i]; strum('openG',pickVoicing('openG',ch,false),ch,cp,c5);
+    grid.querySelectorAll('.ring').forEach(function(x){x.classList.remove('ring');}); b.classList.add('ring');
+  });});
   var tab=renderTab(seq); st.appendChild(tab.el);
-  st.insertAdjacentHTML('beforeend','<p class="legend">Acordes em forma simplificada, um por compasso, sem letra. Toque com o capotraste indicado: as casas da tablatura contam a partir dele.</p>'+LEGEND);
-  current={seq:seq,cols:tab.cols};
+  st.insertAdjacentHTML('beforeend','<p class="legend">Acordes em forma simplificada, um por compasso.'+(useCapo?' As casas da tablatura contam a partir do capotraste.':'')+'</p>'+LEGEND);
+  var sheet=document.getElementById('sg-sheet');
+  current={seq:seq,cols:tab.cols,onMeasure:sheet?function(mi){
+    var o=sheet.querySelector('.lch.on'); if(o) o.classList.remove('on');
+    var e=mi>=0?sheet.querySelector('.lch[data-m="'+mi+'"]'):null; if(e) e.classList.add('on');
+  }:null};
   function rerender(){var was=P.on; save(); renderSongs(); if(was) play(current.seq,current.cols);}
   st.querySelectorAll('#sg-parts .chip').forEach(function(b){b.addEventListener('click',function(){S.songPart=+b.dataset.i; rerender();});});
   st.querySelectorAll('#sg-stages .chip').forEach(function(b){b.addEventListener('click',function(){S.songStage=+b.dataset.i; rerender();});});
+  st.querySelectorAll('#sg-capo button').forEach(function(b){b.addEventListener('click',function(){S.songCapo=b.dataset.v==='1'; rerender();});});
+  st.querySelectorAll('#sg-lyr button').forEach(function(b){b.addEventListener('click',function(){S.songLyrics=b.dataset.v==='1'; rerender();});});
   var lv=0, html='';
   SONGS.forEach(function(x){
     if(x.level!==lv){lv=x.level; html+='<p class="lvl">Nível '+lv+' · '+LEVELS[lv]+'</p>';}
