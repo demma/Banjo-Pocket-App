@@ -149,6 +149,12 @@ h3{font:700 1.2rem/1.15 var(--font-display);margin:0;text-wrap:balance}
 .c.on{background-color:var(--hl)}
 .c.on span{background:var(--hl)}
 .legend{margin:0;font-size:.78rem;color:var(--muted)}
+.artist{margin:-6px 0 0;color:var(--muted);font-size:.9rem}
+.facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;margin:0;font-size:.88rem}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0;font-weight:700}
+#sg-stages,#sg-parts{flex-wrap:wrap;overflow:visible}
+.lvl{margin:0;padding:16px 4px 6px;font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--brass);font-weight:700;border-bottom:1px solid var(--line)}
 .legend b{font-family:var(--font-mono);color:var(--ink)}
 .plist{display:flex;flex-direction:column;border-top:1px solid var(--line)}
 .pitem{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px 12px;padding:12px 4px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left}
@@ -170,8 +176,8 @@ h3{font:700 1.2rem/1.15 var(--font-display);margin:0;text-wrap:balance}
 .tgl{width:40px;height:40px;border:1px solid var(--line);background:var(--surface);border-radius:50%;display:grid;place-items:center;color:var(--muted);padding:0}
 .tgl svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .tgl[aria-pressed="true"]{border-color:var(--pearl);color:var(--pearl);background:var(--surface-2)}
-.nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-.nav button{background:none;border:0;padding:8px 0 9px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.72rem;color:var(--muted)}
+.nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav button{background:none;border:0;padding:8px 0 9px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.68rem;min-width:0;color:var(--muted)}
 .nav button[aria-current="page"]{color:var(--brass);font-weight:700}
 .nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
@@ -227,6 +233,16 @@ h3{font:700 1.2rem/1.15 var(--font-display);margin:0;text-wrap:balance}
       <p class="legend">Toque num diagrama para ouvir. Cordas da esquerda para a direita: 4ª, 3ª, 2ª, 1ª. A 5ª corda fica solta. Os números acima de cada desenho são a casa de cada corda (4ª→1ª).</p>
     </section>
 
+    <section class="view gutter" id="v-musicas" hidden>
+      <div>
+        <p class="eyebrow">Tutoriais por música</p>
+        <h2>Do mais fácil ao mais difícil</h2>
+        <p class="intro">Cada música tem três etapas de dedilhado. Comece pela 1 e só avance quando as trocas de acorde saírem sem parar o ritmo.</p>
+      </div>
+      <div class="stage" id="st-musicas"></div>
+      <div class="plist" id="ls-musicas"></div>
+    </section>
+
     <section class="view gutter" id="v-dedilhados" hidden>
       <div>
         <p class="eyebrow">Dedilhados · três dedos (Scruggs)</p>
@@ -277,6 +293,8 @@ h3{font:700 1.2rem/1.15 var(--font-display);margin:0;text-wrap:balance}
   <nav class="nav gutter" aria-label="Seções">
     <button type="button" data-view="acordes" aria-current="page">
       <svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9.7 3v18M14.3 3v18M5 8h14M5 13h14"/><circle cx="12" cy="10.5" r="1.3" fill="currentColor"/></svg>Acordes</button>
+    <button type="button" data-view="musicas">
+      <svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>Músicas</button>
     <button type="button" data-view="dedilhados">
       <svg viewBox="0 0 24 24"><path d="M4 16c2-6 6-9 9-7s1 6-2 6-3-5 1-8 7-1 8 2"/><path d="M18.5 6.5 20 9.2l-2.9.6"/></svg>Dedilhados</button>
     <button type="button" data-view="riffs">
@@ -397,6 +415,38 @@ var RIFFS=[
    d:'Melodia na 1ª e 2ª cordas com “bum-di-ti” e um pull-off no contratempo, típico do old-time.'}
 ];
 RIFFS.forEach(function(r){r.div=2;});
+/* Músicas: só acordes (sem letra), forma simplificada com um acorde por compasso.
+   stages = ids de ROLLS/RHYTHMS, do mais fácil para o mais difícil. Tocadas em Sol aberto + capotraste. */
+var LEVELS={1:'Iniciante',2:'Básico',3:'Intermediário',4:'Avançado'};
+var SONGS=[
+  {id:'cabbage', title:'Boil Them Cabbage Down', artist:'Tradicional', level:1, orig:'G', capo:0, bpm:80,
+   parts:[{n:'Forma completa', c:'G G C C G G D G'}], stages:['boom','pinch','alt'],
+   tip:'A música clássica para começar: três acordes, um por compasso. Na etapa 1 só o baixo e a pinça, para treinar as trocas sem parar o ritmo.'},
+  {id:'circle', title:'Will the Circle Be Unbroken', artist:'Tradicional (gravação da Carter Family)', level:1, orig:'G', capo:0, bpm:88,
+   parts:[{n:'Verso e refrão', c:'G G7 C G G G D G'}], stages:['boom','pinch','fwdrev'],
+   tip:'Progressão gospel I–IV–V. O G7 prepara a ida para o C: em Sol aberto é só a 1ª corda na casa 3, o resto solto.'},
+  {id:'oldjoe', title:'Old Joe Clark', artist:'Tradicional (fiddle tune)', level:2, orig:'A', capo:2, bpm:84,
+   parts:[{n:'Parte A', c:'G G G D G G D G'},{n:'Parte B', c:'G G F F G G D G'}], stages:['claw','double','drop'],
+   tip:'Tema de old-time em modo mixolídio: o F na parte B dá o sabor antigo. Toque em clawhammer, com capotraste na casa 2 para soar em Lá, como os violinistas tocam.'},
+  {id:'wagon', title:'Wagon Wheel', artist:'Old Crow Medicine Show / Darius Rucker', level:2, orig:'A', capo:2, bpm:80,
+   parts:[{n:'Ciclo (verso e refrão)', c:'G D Em C G D C C'}], stages:['pinch','fwdrev','fwd'],
+   tip:'A música inteira é este ciclo de quatro acordes. O Em é fácil (2·0·0·2); segure o C por dois compassos no fim de cada volta.'},
+  {id:'country', title:'Take Me Home, Country Roads', artist:'John Denver', level:2, orig:'A', capo:2, bpm:80,
+   parts:[{n:'Verso', c:'G Em D C G G Em D C G'},{n:'Refrão', c:'G D Em C G D C G'},{n:'Ponte', c:'Em D G G C G D D Em F C G D D7'}],
+   stages:['pinch','fwdrev','fwd'],
+   tip:'Verso e refrão usam os mesmos quatro acordes. A ponte traz o F (3·2·1·3), o acorde mais difícil da música: treine a troca C→F→C devagar antes de juntar com o rolo.'},
+  {id:'jolene', title:'Jolene', artist:'Dolly Parton', level:3, orig:'C#m', capo:4, bpm:84,
+   parts:[{n:'Refrão e verso', c:'Am C G Am G Em Am Am'}], stages:['alt','bwd','foggy'],
+   tip:'Tom menor e gravação rápida (perto de 110 bpm). O Am (2·2·1·2) é a base: deixe o indicador na 2ª corda casa 1 e só mexa os outros dedos. Suba o andamento de 4 em 4 bpm.'},
+  {id:'foggy', title:'Foggy Mountain Breakdown', artist:'Lester Flatt & Earl Scruggs', level:4, orig:'G', capo:0, bpm:96,
+   parts:[{n:'Progressão', c:'G G Em Em G G D G'}], stages:['fwd','foggy','vamp'],
+   tip:'O tema de Earl Scruggs usa licks próprios que não estão aqui: você treina os rolos e o vamp sobre a progressão G–Em–D da música. A gravação é muito rápida; comece devagar e suba aos poucos.'}
+];
+function patternById(id){
+  var i; for(i=0;i<ROLLS.length;i++) if(ROLLS[i].id===id) return {name:ROLLS[i].name,p:ROLLS[i].p,div:2,closed:false};
+  for(i=0;i<RHYTHMS.length;i++) if(RHYTHMS[i].id===id) return {name:RHYTHMS[i].name,p:RHYTHMS[i].p,div:RHYTHMS[i].div,closed:!!RHYTHMS[i].closed};
+  return {name:id,p:'P3 I2 M1 P5 M1 I2 P3 M1',div:2,closed:false};
+}
 var PROGS=[
   {id:'g',   chords:['G']},
   {id:'145', chords:['G','C','G','D']},
@@ -415,32 +465,33 @@ function parseStep(tok){
     return {kind:'note',fin:tech?null:m[1],tech:tech,s:+m[2],f:m[3]==null?null:+m[3]};
   });
 }
-function resolveMeasure(pat,tk,ch,closed){
-  var t=TUNINGS[tk], v=pickVoicing(tk,ch,closed);
+function resolveMeasure(pat,tk,ch,closed,capo){
+  var t=TUNINGS[tk], v=pickVoicing(tk,ch,closed), cp=capo||0;
   var steps=pat.trim().split(/\s+/).map(function(tok){
     var out=[];
     parseStep(tok).forEach(function(e){
       if(e.kind==='note'){
         var f=e.f!=null?e.f:(e.s===5?0:v.frets[4-e.s]);
-        out.push({kind:'pluck',s:e.s,f:f,midi:midiOf(t,e.s,f),fin:e.fin,tech:e.tech});
+        out.push({kind:'pluck',s:e.s,f:f,midi:midiOf(t,e.s,f)+cp,fin:e.fin,tech:e.tech});
       }else{
-        for(var s=e.from,o=0;s>=e.to;s--,o++){var ff=s===5?0:v.frets[4-s]; out.push({kind:e.kind,s:s,f:ff,midi:midiOf(t,s,ff),order:o});}
+        for(var s=e.from,o=0;s>=e.to;s--,o++){var ff=s===5?0:v.frets[4-s]; out.push({kind:e.kind,s:s,f:ff,midi:midiOf(t,s,ff)+cp,order:o});}
       }
     });
     return out;
   });
   return {label:chordName(ch),steps:steps};
 }
-function buildSeq(defs,tk,div,closed){
-  var measures=defs.map(function(d){return resolveMeasure(d.p,tk,d.ch,closed);});
+function buildSeq(defs,tk,div,closed,capo){
+  var measures=defs.map(function(d){var m=resolveMeasure(d.p,tk,d.ch,closed,capo); if(d.pre) m.label=d.pre+' · '+m.label; return m;});
   var steps=[]; measures.forEach(function(m,mi){m.steps.forEach(function(evs,si){steps.push({evs:evs,mi:mi,si:si});});});
   return {div:div,measures:measures,steps:steps,tk:tk};
 }
 
 /* ---------- estado ---------- */
 var S={view:'acordes',tuning:'openG',root:7,q:'',mode:'nt',bpm:100,metro:false,loop:true,prog:'145',
-  sel:{dedilhados:'fwdrev',riffs:'slide',ritmos:'claw'}};
+  sel:{dedilhados:'fwdrev',riffs:'slide',ritmos:'claw',musicas:'cabbage'},songStage:0,songPart:-1};
 try{var saved=JSON.parse(localStorage.getItem('banjo-de-bolso')||'null'); if(saved){for(var k in saved) if(k in S) S[k]=saved[k]; if(!TUNINGS[S.tuning]) S.tuning='openG';}}catch(e){}
+S.sel=Object.assign({dedilhados:'fwdrev',riffs:'slide',ritmos:'claw',musicas:'cabbage'},S.sel||{});
 function save(){try{localStorage.setItem('banjo-de-bolso',JSON.stringify(S));}catch(e){}}
 
 /* ---------- áudio: Karplus-Strong ---------- */
@@ -682,15 +733,64 @@ function renderView(name){
   });});
 }
 
+/* ---------- músicas ---------- */
+function setBpm(v){S.bpm=v; var b=document.getElementById('bpm'); b.value=v; document.getElementById('bpmv').textContent=v; save();}
+function renderSongs(){
+  var sg=SONGS.filter(function(x){return x.id===S.sel.musicas;})[0]||SONGS[0];
+  var stage=Math.max(0,Math.min(S.songStage|0,sg.stages.length-1));
+  var part=sg.parts.length>1?Math.max(-1,Math.min(S.songPart|0,sg.parts.length-1)):0;
+  var pat=patternById(sg.stages[stage]);
+  var parts=part<0?sg.parts:[sg.parts[part]], defs=[];
+  parts.forEach(function(pt){pt.c.split(/\s+/).forEach(function(c,i){defs.push({ch:parseChord(c),p:pat.p,pre:i===0&&parts.length>1?pt.n:''});});});
+  var seq=buildSeq(defs,'openG',pat.div,pat.closed,sg.capo);
+  var st=document.getElementById('st-musicas'), ls=document.getElementById('ls-musicas');
+  var capoTxt=sg.capo?('casa '+sg.capo):'sem capotraste';
+  var fifth=sg.capo?('afine em '+NOTE_PT[NOTE[(7+sg.capo)%12]]+' (ou spike na casa '+(5+sg.capo)+')'):'Sol, como sempre';
+  var h='<div class="stage-h"><h3>'+esc(sg.title)+'</h3><span class="badge">Nível '+sg.level+' · '+LEVELS[sg.level]+'</span></div>'
+    +'<p class="artist">'+esc(sg.artist)+'</p>'
+    +'<dl class="facts"><dt>Tom original</dt><dd>'+esc(sg.orig)+'</dd><dt>Capotraste</dt><dd>'+capoTxt+' · formas de G</dd>'
+    +'<dt>5ª corda</dt><dd>'+fifth+'</dd><dt>Começar em</dt><dd>'+sg.bpm+' bpm</dd></dl>'
+    +'<p class="desc">'+esc(sg.tip)+'</p>';
+  if(sg.parts.length>1){
+    h+='<div><p class="lbl">Parte</p><div class="progs" id="sg-parts">'
+      +'<button type="button" class="chip" data-i="-1" aria-pressed="'+(part<0)+'">Música toda</button>'
+      +sg.parts.map(function(pt,i){return '<button type="button" class="chip" data-i="'+i+'" aria-pressed="'+(part===i)+'">'+esc(pt.n)+'</button>';}).join('')+'</div></div>';
+  }
+  h+='<div><p class="lbl">Etapa</p><div class="progs" id="sg-stages">'+sg.stages.map(function(id,i){
+    return '<button type="button" class="chip" data-i="'+i+'" aria-pressed="'+(i===stage)+'">'+(i+1)+' · '+esc(patternById(id).name)+'</button>';
+  }).join('')+'</div></div>';
+  st.innerHTML=h;
+  var tab=renderTab(seq); st.appendChild(tab.el);
+  st.insertAdjacentHTML('beforeend','<p class="legend">Acordes em forma simplificada, um por compasso, sem letra. Toque com o capotraste indicado: as casas da tablatura contam a partir dele.</p>'+LEGEND);
+  current={seq:seq,cols:tab.cols};
+  function rerender(){var was=P.on; save(); renderSongs(); if(was) play(current.seq,current.cols);}
+  st.querySelectorAll('#sg-parts .chip').forEach(function(b){b.addEventListener('click',function(){S.songPart=+b.dataset.i; rerender();});});
+  st.querySelectorAll('#sg-stages .chip').forEach(function(b){b.addEventListener('click',function(){S.songStage=+b.dataset.i; rerender();});});
+  var lv=0, html='';
+  SONGS.forEach(function(x){
+    if(x.level!==lv){lv=x.level; html+='<p class="lvl">Nível '+lv+' · '+LEVELS[lv]+'</p>';}
+    html+='<button type="button" class="pitem" data-id="'+x.id+'" aria-pressed="'+(x.id===sg.id)+'"><span class="pn">'+esc(x.title)+'</span>'
+      +'<span class="pf">'+esc(x.artist)+'</span><span class="badge pk">'+(x.capo?'capo '+x.capo:'sem capo')+'</span></button>';
+  });
+  ls.innerHTML=html;
+  ls.querySelectorAll('.pitem').forEach(function(b){b.addEventListener('click',function(){
+    var was=P.on, n=SONGS.filter(function(x){return x.id===b.dataset.id;})[0];
+    S.sel.musicas=n.id; S.songStage=0; S.songPart=-1; setBpm(n.bpm); save(); renderSongs();
+    if(was) play(current.seq,current.cols);
+    document.getElementById('main').scrollTo({top:0,behavior:'smooth'});
+  });});
+}
+function renderAny(name){ if(name==='acordes') renderChords(); else if(name==='musicas') renderSongs(); else renderView(name); }
+
 /* ---------- navegação ---------- */
-var VIEW_IDS=['acordes','dedilhados','riffs','ritmos'];
+var VIEW_IDS=['acordes','musicas','dedilhados','riffs','ritmos'];
 function show(name){
   if(VIEW_IDS.indexOf(name)<0) name='acordes';
   stop(); S.view=name; save();
   VIEW_IDS.forEach(function(v){document.getElementById('v-'+v).hidden=v!==name;});
   document.querySelectorAll('.nav button').forEach(function(b){ if(b.dataset.view===name) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
   document.getElementById('transport').hidden=name==='acordes';
-  if(name==='acordes') renderChords(); else renderView(name);
+  renderAny(name);
   document.getElementById('main').scrollTop=0;
 }
 
@@ -698,7 +798,7 @@ function show(name){
 var tsel=document.getElementById('tuning');
 tsel.innerHTML=Object.keys(TUNINGS).map(function(k){return '<option value="'+k+'">'+TUNINGS[k].code+' · '+TUNINGS[k].name+'</option>';}).join('');
 tsel.value=S.tuning;
-tsel.addEventListener('change',function(){S.tuning=tsel.value; save(); var was=P.on; if(S.view==='acordes') renderChords(); else {renderView(S.view); if(was&&S.view!=='riffs') play(current.seq,current.cols);}});
+tsel.addEventListener('change',function(){S.tuning=tsel.value; save(); var was=P.on; if(S.view==='acordes') renderChords(); else if(S.view==='dedilhados'||S.view==='ritmos'){renderView(S.view); if(was) play(current.seq,current.cols);}});
 document.getElementById('roots').innerHTML=NOTE.map(function(n,i){return '<button type="button" class="chip" data-r="'+i+'">'+n+'</button>';}).join('');
 document.getElementById('quals').innerHTML=QUAL.map(function(q){return '<button type="button" class="chip" data-q="'+q.k+'" title="'+esc(q.name)+'">'+esc(q.lbl===''?'maior':q.lbl)+'</button>';}).join('');
 document.querySelectorAll('#roots .chip').forEach(function(b){b.addEventListener('click',function(){S.root=+b.dataset.r; save(); renderChords();});});
