@@ -44,8 +44,9 @@ button{cursor:pointer}
 :focus-visible{outline:2px solid var(--pearl);outline-offset:2px}
 .gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 
-.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto}
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:10px;background:var(--surface);border-bottom:1px solid var(--line)}
+.app{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto}
+/* Cabeçalho sempre escuro (braço de ébano): o texto branco da barra de status do iPhone fica legível nos dois temas */
+.top{--surface-2:#2a221e;--ink:#eee6d9;--muted:#b3a898;--line:#3b322c;--brass:#e2b352;color-scheme:dark;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:calc(10px + env(safe-area-inset-top,0px));padding-bottom:10px;background:#1e1815;border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:10px;flex:none}
 .brand h1{font:700 clamp(1.05rem,5vw,1.3rem)/1 var(--font-display);margin:0;white-space:nowrap}
 .logo{width:30px;height:30px;flex:none}
@@ -54,7 +55,7 @@ button{cursor:pointer}
 .logo .hook{stroke:var(--brass);stroke-width:2;stroke-linecap:round}
 .logo .neck{fill:var(--ink)}
 .tuning{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0;flex:1 1 0}
-.tuning label{font-size:.66rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.tuning label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
 .sel{position:relative;max-width:100%}
 .sel select{appearance:none;-webkit-appearance:none;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:6px 28px 6px 12px;font-family:var(--font-mono);font-size:.8rem;max-width:100%;width:100%;text-overflow:ellipsis}
 .sel::after{content:"▾";position:absolute;right:11px;top:50%;transform:translateY(-52%);pointer-events:none;color:var(--muted);font-size:.8rem}
@@ -155,7 +156,7 @@ h3{font:700 1.2rem/1.15 var(--font-display);margin:0;text-wrap:balance}
 .tgl{width:40px;height:40px;border:1px solid var(--line);background:var(--surface);border-radius:50%;display:grid;place-items:center;color:var(--muted);padding:0}
 .tgl svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .tgl[aria-pressed="true"]{border-color:var(--pearl);color:var(--pearl);background:var(--surface-2)}
-.nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--surface);border-top:1px solid var(--line)}
+.nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
 .nav button{background:none;border:0;padding:8px 0 9px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.72rem;color:var(--muted)}
 .nav button[aria-current="page"]{color:var(--brass);font-weight:700}
 .nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
