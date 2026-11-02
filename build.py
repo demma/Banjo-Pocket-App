@@ -41,5 +41,10 @@ if ('serviceWorker' in navigator) {
 </body>
 </html>
 """
+import re
+ver = re.search(r"var APP_VERSION='([^']+)'", app).group(1)
 (root / "index.html").write_text(head + app + tail, encoding="utf-8")
-print("index.html gerado")
+sw = (root / "sw.js").read_text(encoding="utf-8")
+sw = re.sub(r"const CACHE = 'banjo-de-bolso-[^']*';", "const CACHE = 'banjo-de-bolso-" + ver + "';", sw)
+(root / "sw.js").write_text(sw, encoding="utf-8")
+print("index.html gerado · versão", ver)
