@@ -1,5 +1,5 @@
 // Cache offline: app shell primeiro, fontes do Google em cache conforme forem usadas.
-const CACHE = 'banjo-de-bolso-v4';
+const CACHE = 'banjo-de-bolso-v5';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png', './icons/icon-maskable-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

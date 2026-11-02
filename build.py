@@ -19,6 +19,21 @@ head = """<!doctype html>
 """
 tail = """
 <script>
+// iOS, app na tela inicial com barra de status translúcida: a janela informada é mais curta que a tela
+// (falta a altura da barra de status). Estica o app até a altura física; não faz nada se não houver diferença.
+(function () {
+  var app = document.querySelector('.app');
+  function fit() {
+    var standalone = navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    var portrait = !window.matchMedia || matchMedia('(orientation: portrait)').matches;
+    var sh = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+    if (standalone && sh > window.innerHeight + 1) { app.style.bottom = 'auto'; app.style.height = sh + 'px'; }
+    else { app.style.bottom = ''; app.style.height = ''; }
+  }
+  fit();
+  window.addEventListener('resize', fit);
+  window.addEventListener('orientationchange', function () { setTimeout(fit, 300); });
+})();
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
 }

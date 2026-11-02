@@ -60,7 +60,7 @@ button{cursor:pointer}
 
 .app{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto}
 /* Cabeçalho sempre escuro (braço de ébano): o texto branco da barra de status do iPhone fica legível nos dois temas */
-.top{--surface-2:#2a221e;--ink:#eee6d9;--muted:#b3a898;--line:#3b322c;--brass:#e2b352;color-scheme:dark;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:calc(10px + env(safe-area-inset-top,0px));padding-bottom:10px;background:#1e1815;border-bottom:1px solid var(--line)}
+.top{--surface-2:#2a221e;--ink:#eee6d9;--muted:#b3a898;--line:#3b322c;--brass:#e2b352;color-scheme:dark;color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:12px;background:#1e1815;border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:10px;flex:none}
 .brand h1{font:700 clamp(1.05rem,5vw,1.3rem)/1 var(--font-display);margin:0;white-space:nowrap}
 .logo{width:30px;height:30px;flex:none}
@@ -69,7 +69,7 @@ button{cursor:pointer}
 .logo .hook{stroke:var(--brass);stroke-width:2;stroke-linecap:round}
 .logo .neck{fill:var(--ink)}
 .tuning{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0;flex:1 1 0}
-.tuning label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.tuning label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
 .sel{position:relative;max-width:100%}
 .sel select{appearance:none;-webkit-appearance:none;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:6px 28px 6px 12px;font-family:var(--font-mono);font-size:.8rem;max-width:100%;width:100%;text-overflow:ellipsis}
 .sel::after{content:"▾";position:absolute;right:11px;top:50%;transform:translateY(-52%);pointer-events:none;color:var(--muted);font-size:.8rem}
@@ -723,6 +723,21 @@ show(location.hash?location.hash.slice(1):S.view);
 </script>
 
 <script>
+// iOS, app na tela inicial com barra de status translúcida: a janela informada é mais curta que a tela
+// (falta a altura da barra de status). Estica o app até a altura física; não faz nada se não houver diferença.
+(function () {
+  var app = document.querySelector('.app');
+  function fit() {
+    var standalone = navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    var portrait = !window.matchMedia || matchMedia('(orientation: portrait)').matches;
+    var sh = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+    if (standalone && sh > window.innerHeight + 1) { app.style.bottom = 'auto'; app.style.height = sh + 'px'; }
+    else { app.style.bottom = ''; app.style.height = ''; }
+  }
+  fit();
+  window.addEventListener('resize', fit);
+  window.addEventListener('orientationchange', function () { setTimeout(fit, 300); });
+})();
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
 }
